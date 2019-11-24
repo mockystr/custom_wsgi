@@ -14,16 +14,18 @@ def application_from_path(application_path: str):
 @dataclasses.dataclass
 class WSGIConfig:
     url_scheme: str
+    threads: int
 
     @classmethod
     def from_dict(cls, d: Mapping) -> 'WSGIConfig':
         return cls(
             url_scheme=d.get('url_scheme'),
+            threads=d.get('threads'),
         )
 
 
 def wsgi_config():
-    with open('custom_wsgi/config.yml', 'r') as f:
+    with open('config.yml', 'r') as f:
         cfg = yaml.load(f, Loader=yaml.FullLoader)
     return WSGIConfig.from_dict(cfg.get('wsgi'))
 
@@ -46,6 +48,6 @@ class ServerConfig:
 
 
 def server_config():
-    with open('custom_wsgi/config.yml', 'r') as f:
+    with open('config.yml', 'r') as f:
         cfg = yaml.load(f, Loader=yaml.FullLoader)
     return ServerConfig.from_dict(cfg.get('server'))
