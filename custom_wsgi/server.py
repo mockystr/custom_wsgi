@@ -40,8 +40,6 @@ class Response:
     def get_response_text(self, result_data):
         return self._collect_response(result_data).encode()
 
-    # def execute_response(self, conn, result_data, method):
-
 
 class Server:
     def __init__(self, application):
