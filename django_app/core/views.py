@@ -4,11 +4,14 @@ from django.http import HttpResponse
 
 
 def index(request):
-    ...
-    return HttpResponse('This is index', content_type='text/plain')
+    message = 'This is index.'
+    if request.method == 'GET':
+        data = request.META.get('QUERY_STRING')
+        message += f' Data {data}'
+    return HttpResponse(message, content_type='text/plain')
 
 
 def sleep_index(request):
     ...
     sleep(500)
-    return HttpResponse('This is index', content_type='text/plain')
+    return HttpResponse('This is sleep index', content_type='text/plain')
