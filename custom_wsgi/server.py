@@ -1,5 +1,6 @@
 import io
 import socket
+import sys
 
 from typing import Dict, List
 from multiprocessing.pool import ThreadPool
@@ -62,6 +63,7 @@ class Server:
                 self.pool.close()
                 self.pool.join()
                 self.pool.terminate()
+                self.socket.close()
 
     def handle_request(self, conn):
         data = conn.recv(self._server_config.buffer_size).decode('utf-8')
@@ -75,13 +77,26 @@ class Server:
         self.logger.info(f'{method} {self.headers[0]} {current_thread().ident}')
 
     def _form_environment(self, data: str, method: str, path: str) -> Dict:
+        split_path = path.split('?')
+        path_info = split_path[0]
+        query_sting = ''
+        if len(split_path) >= 2:
+            query_sting = '?'.join(split_path[1:])
+
         return {
             'REQUEST_METHOD': method,
-            'PATH_INFO': path,
+            'PATH_INFO': path_info,
+            'QUERY_STRING': query_sting,
             'SERVER_NAME': self.host,
             'SERVER_PORT': str(self.port),
 
             'wsgi.input': io.StringIO(data),
+            'wsgi.errors': sys.stderr,
+
+            'wsgi.multithread': True,
+            'wsgi.multiprocess': False,
+            'wsgi.run_once': False,
+            'wsgi.version': (1, 0),
             'wsgi.url_scheme': self.wsgi_config.url_scheme,
         }
 
