@@ -1,6 +1,9 @@
 import io
 import socket
+
 from typing import Dict, List
+from multiprocessing.pool import ThreadPool
+from threading import current_thread
 
 from django.http import HttpResponse
 
@@ -27,6 +30,8 @@ class Server:
 
         self.headers = []
 
+        self.pool = ThreadPool(processes=self.wsgi_config.threads)
+
     @property
     def server_config(self):
         return self._server_config
@@ -43,12 +48,20 @@ class Server:
     def port(self):
         return self._server_config.port
 
-    def run(self):
-        self.logger.info(f'RUNNING ON {self.host}:{self.port}')
+    def execute(self):
+        self._run_forever()
+
+    def _run_forever(self):
+        self.logger.info(f'RUNNING {self.host}:{self.port}')
 
         while True:
-            conn, addr = self.socket.accept()
-            self.handle_request(conn)
+            try:
+                conn, addr = self.socket.accept()
+                self.pool.apply_async(self.handle_request, (conn,))
+            except KeyboardInterrupt:
+                self.pool.close()
+                self.pool.join()
+                self.pool.terminate()
 
     def handle_request(self, conn):
         data = conn.recv(self._server_config.buffer_size).decode('utf-8')
@@ -59,7 +72,7 @@ class Server:
 
         conn.sendall(response.encode())
         conn.close()
-        self.logger.info(f'{method} {self.headers[0]}')
+        self.logger.info(f'{method} {self.headers[0]} {current_thread().ident}')
 
     def _form_environment(self, data: str, method: str, path: str) -> Dict:
         return {

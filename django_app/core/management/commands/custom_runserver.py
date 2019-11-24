@@ -7,8 +7,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         from custom_wsgi.server import make_server
 
-        server = make_server(args[0])
-        server.run()
+        make_server(args[0]).execute()
 
     def add_arguments(self, parser):
         parser.add_argument(

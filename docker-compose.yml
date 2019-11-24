@@ -1,0 +1,10 @@
+version: '3.1'
+
+services:
+  base:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: docker_custom_wsgi-base
+    ports:
+      - 8000:8000

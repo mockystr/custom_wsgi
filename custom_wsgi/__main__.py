@@ -10,4 +10,4 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-make_server(args.app_path[0]).run()
+make_server(args.app_path[0]).execute()
